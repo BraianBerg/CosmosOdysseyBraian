@@ -1,0 +1,81 @@
+﻿@page "/counter"
+@using CosmosOdyssey.ApplicationServices
+@using CosmosOdyssey.Core.Domain
+@using CosmosOdyssey.Core.ViewModel
+@inject IPriceListServices PriceService
+
+
+<h1>Counter</h1>
+<p>Current count: @currentCount</p>
+<button class="btn btn-primary" @onclick="@CountAndPost">UPDATE DB</button>
+
+@if (displayModel == null)
+{
+    <h2> Loading...</h2>
+}
+else
+{
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th>From</th>
+                <th>----></th>
+                <th>To </th>
+                <th>FlightStart</th>
+                <th>FlightEnd</th>
+                <th>Company</th>
+                <th>TravelTime</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < displayModel.Length; i++)
+            {
+            <tr>
+                <td>@displayModel[i].Form</td>
+                <td>---></td>
+                <td>@displayModel[i].To</td>
+                <td>@displayModel[i].FlightStart</td>
+                <td>@displayModel[i].FlightEnd</td>
+                <td>@displayModel[i].CompanyName</td>
+                <td>@displayModel[i].TravelTime</td>
+                <td>
+                    <button class="btn btn-primary">Register fot flight</button>
+                </td>
+
+            </tr>
+
+            }
+
+
+        </tbody>
+    </table>
+}
+
+
+
+
+
+@code {
+    DisplayModel[] displayModel;
+
+    int currentCount = 0;
+
+    public void CountAndPost()
+    {
+        currentCount++;
+
+        PriceService.PostRootData();
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        displayModel = await PriceService.GetSpaceTravelDataDomain();
+    }
+
+
+
+
+}
+
+
