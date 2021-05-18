@@ -11,6 +11,7 @@ namespace CosmosOdyssey.ApplicationServices
        // void DeleteOldPriceList(string id);
         Task<Rootobject> GetDataFromJson();
         Task<DisplayModel[]> GetSpaceTravelDataDomain();
+        Task<DisplayModel[]> SearchForFlight(string FromSearchStirng, string ToSearchString);
         void PostRootData();
     }
 }

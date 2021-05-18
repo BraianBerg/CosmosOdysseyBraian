@@ -15,6 +15,18 @@
 }
 else
 {
+<div class="form-group">
+    <label class="sr-only" for="filter-From">Filter</label>
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="fromSearchString"
+           placeholder="Filter By Location" />
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="toSearchString"
+           placeholder="Filter By Destination" />
+    <button type="button" class="btn btn-primary mb-2 mr-sm-2" @onclick="Filter">Fliter</button>
+    <button type="button" class="btn btn-primary mb-2" @onclick="clear">Clear</button>
+
+</div>
     <table class="table">
         <thead class="thead-dark">
             <tr>
@@ -39,7 +51,7 @@ else
                 <td>@displayModel[i].CompanyName</td>
                 <td>@displayModel[i].TravelTime</td>
                 <td>
-                    <button class="btn btn-primary">Register fot flight</button>
+                    <button class="btn btn-primary">Register for flight</button>
                 </td>
 
             </tr>
@@ -57,7 +69,8 @@ else
 
 @code {
     DisplayModel[] displayModel;
-
+    private string fromSearchString = string.Empty;
+    private string toSearchString = string.Empty;
     int currentCount = 0;
 
     public void CountAndPost()
@@ -66,6 +79,18 @@ else
 
         PriceService.PostRootData();
 
+    }
+    private async Task Filter()
+    {
+        displayModel = await PriceService.SearchForFlight(fromSearchString, toSearchString);
+        StateHasChanged();
+    }
+    private async Task clear()
+    {
+        fromSearchString = string.Empty;
+        toSearchString = string.Empty;
+        StateHasChanged();
+        displayModel = await PriceService.GetSpaceTravelDataDomain();
     }
 
     protected override async Task OnInitializedAsync()

@@ -208,42 +208,764 @@ namespace CosmosOdyssey.ApplicationServices
         }
 
         
-        public async Task<DisplayModel[]> GetSpaceTravelDataDomain()
-        {
-            DisplayModel[] displayModel = new DisplayModel[300];
+       public async Task<DisplayModel[]> SearchForFlight(string FromSearchStirng, string ToSearchString)
+       {
+
+
+            var PriceListId = await _context.IdAi.OrderByDescending(e => e.Id).FirstOrDefaultAsync();
+            var midagi  = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+            int NumberOfMachingData = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId)).Count();
+            DisplayModel[] displayModel = new DisplayModel[NumberOfMachingData];
+            DisplayModel[] displayModel2 = new DisplayModel[300];
             for (int i = 0; i < displayModel.Length; i++)
             {
                 displayModel[i] = new DisplayModel();
             }
-           
+            if (PriceListId.PriceListDomainId != null)
+            {
+                if (NumberOfMachingData != 0)
+                {
+                    int R = 0;
+                    foreach (var item in midagi)
+                    {
+                        displayModel[R].Form = item.From;
+                        displayModel[R].To = item.To;
+                        displayModel[R].FlightStart = item.FlightStart;
+                        displayModel[R].FlightEnd = item.FlightEnd;
+                        displayModel[R].PriceListId = item.PriceListDomainId;
+                        displayModel[R].CompanyName = item.CompanyName;
+                        displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                        R++;
+                    }
+                }
+                else 
+                {
+                    var midagi1 = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+                  
+                }
+               
 
-            var stuffid = await _context.IdAi.OrderByDescending(e => e.Id).FirstOrDefaultAsync();
-            var shit = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(stuffid.PriceListDomainId));
+                
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            return displayModel;
+            /*
+             var Leg0 = _context.ProviderAllDomains.Where(e => e.From.Contains("Earth") && e.To.Contains("Jupiter") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+             var Leg1 = _context.ProviderAllDomains.Where(e => e.From.Contains("Earth") && e.To.Contains("Uranus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg2 = _context.ProviderAllDomains.Where(e => e.From.Contains("Mercury") && e.To.Contains("Venus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg3 = _context.ProviderAllDomains.Where(e => e.From.Contains("Venus") && e.To.Contains("Mercury") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));         
+             var Leg4 = _context.ProviderAllDomains.Where(e => e.From.Contains("Venus") && e.To.Contains("Earth") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg5 = _context.ProviderAllDomains.Where(e => e.From.Contains("Mars") && e.To.Contains("Venus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg6 = _context.ProviderAllDomains.Where(e => e.From.Contains("Jupiter") && e.To.Contains("Mars") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+             var Leg7 = _context.ProviderAllDomains.Where(e => e.From.Contains("Jupiter") && e.To.Contains("Venus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg8 = _context.ProviderAllDomains.Where(e => e.From.Contains("Saturn") && e.To.Contains("Earth") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+             var Leg9 = _context.ProviderAllDomains.Where(e => e.From.Contains("Saturn") && e.To.Contains("Neptune") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg10 = _context.ProviderAllDomains.Where(e => e.From.Contains("Uranus") && e.To.Contains("Saturn") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+             var Leg11 = _context.ProviderAllDomains.Where(e => e.From.Contains("Uranus") && e.To.Contains("Neptune") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+             var Leg12 = _context.ProviderAllDomains.Where(e => e.From.Contains("Neptune") && e.To.Contains("Uranus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+             var Leg13 = _context.ProviderAllDomains.Where(e => e.From.Contains("Neptune") && e.To.Contains("Mercury") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+
+
+             switch (FromSearchStirng)
+             {
+                     case "Neptune":
+                 {
+                     switch (ToSearchString)
+                     {
+                         case "Venus":
+                         {
+
+
+                                 int R = 0;                                    
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Earth":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+
+
+                                 break;
+                         }
+                         case "Mars":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg0)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg6)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+
+                             break;
+                         }
+                         case "Jupiter":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg0)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Uranus":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg1)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Saturn":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg1)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg10)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+
+                             break;
+                         }
+                     }
+
+                     break;    
+                 }
+                     case "Uranus":
+                 {
+                     switch (ToSearchString)
+                     {
+                         case "Jupiter":
+                         {
+
+                             int R = 0;
+                             foreach (var item2 in Leg11)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg0)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Mars":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg11)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg0)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg6)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+
+                             break;
+                         }
+                         case "Earth":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg11)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             foreach (var item in Leg4)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Venus":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg11)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item in Leg2)
+                             {
+
+                                 displayModel[R].Form = item.From;
+                                 displayModel[R].To = item.To;
+                                 displayModel[R].FlightStart = item.FlightStart;
+                                 displayModel[R].FlightEnd = item.FlightEnd;
+                                 displayModel[R].PriceListId = item.PriceListDomainId;
+                                 displayModel[R].CompanyName = item.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+
+                             }
+                             break;
+                         }
+                         case "Mercury":
+                         {
+                             int R = 0;
+                             foreach (var item2 in Leg11)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             foreach (var item2 in Leg13)
+                             {
+                                 displayModel[R].Form = item2.From;
+                                 displayModel[R].To = item2.To;
+                                 displayModel[R].FlightStart = item2.FlightStart;
+                                 displayModel[R].FlightEnd = item2.FlightEnd;
+                                 displayModel[R].PriceListId = item2.PriceListDomainId;
+                                 displayModel[R].CompanyName = item2.CompanyName;
+                                 displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
+                                 R++;
+                             }
+                             break;
+                         }
+                     }
+                     break;
+                 }
+                 case "Saturn":
+                 {
+                         switch (ToSearchString)
+                         {
+                                 case "Uranus":
+                                 {
+
+                                     break;
+                                 }
+
+                         }
+
+
+                         break;
+                 }
+
+
+
+
+
+
+
+
+
+
+             }      
+
+             */
+
+
+
+
+        }
+
+        public async Task<DisplayModel[]> GetSpaceTravelDataDomain()
+        {
+    
+
+           
+            var PriceListId = await _context.IdAi.OrderByDescending(e => e.Id).FirstOrDefaultAsync();
+            var Data = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
+            int NumberOfMachingData = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(PriceListId.PriceListDomainId)).Count();
             // IQueryable<LegDomain> query = _context.LegDomains;
             //  query.OrderByDescending(LegDomain.);
-            if (stuffid.PriceListDomainId != null)
+            DisplayModel[] displayModel = new DisplayModel[NumberOfMachingData];
+            for (int i = 0; i < displayModel.Length; i++)
+            {
+                displayModel[i] = new DisplayModel();
+            }
+            if (PriceListId.PriceListDomainId != null)
             {
                 int i = 0;
-                foreach (var item in shit)
+                foreach (var item in Data)
                 {
-
-                    displayModel[i].Form = item.From;
-                    displayModel[i].To = item.To;
-                    displayModel[i].FlightStart = item.FlightStart;
-                    displayModel[i].FlightEnd = item.FlightEnd;
-                    displayModel[i].PriceListId = item.PriceListDomainId;
-                    displayModel[i].CompanyName = item.CompanyName;
-                    displayModel[i].TravelTime = displayModel[i].FlightEnd.Subtract(displayModel[i].FlightStart);
-                    i++;
+                        displayModel[i].Form = item.From;
+                        displayModel[i].To = item.To;
+                        displayModel[i].FlightStart = item.FlightStart;
+                        displayModel[i].FlightEnd = item.FlightEnd;
+                        displayModel[i].PriceListId = item.PriceListDomainId;
+                        displayModel[i].CompanyName = item.CompanyName;
+                        displayModel[i].TravelTime = displayModel[i].FlightEnd.Subtract(displayModel[i].FlightStart);
+                        i++;
+                 
+          
                 }
-              //  displayModel[0] = (DisplayModel)_context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(stuffid.PriceListDomainId));
-
-           
-
-
-
-
-                // displayModel.CompanyName = c 
+              //  displayModel[0] = (DisplayModel)_context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(stuffid.PriceListDomainId))
+              // displayModel.CompanyName = c 
 
 
                 //query = query.Where(e => e.Id.Contains(stuffid.PriceListDomainId));
@@ -256,6 +978,15 @@ namespace CosmosOdyssey.ApplicationServices
             //await query.ToListAsync();
         }
         
+  
+
+
+
+
+
+
+
+
         /*
         ///delete shit based on id 
         public async void DeleteOldPriceList(string id)
