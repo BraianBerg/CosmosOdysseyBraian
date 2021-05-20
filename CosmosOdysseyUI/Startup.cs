@@ -1,4 +1,4 @@
-using CosmosOdysseyUI.Data;
+
 using CosmosOdyssey.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -38,15 +38,13 @@ namespace CosmosOdysseyUI
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
-
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IPriceListServices, PriceListServices>();
             services.AddScoped<PriceListDomain>();
             
             //services.AddScoped<IPriceListServices, PriceListServices>();
-            services.AddDbContext<CosmosOdysseyDbContext>(options => 
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<CosmosOdysseyDbContext>(option => 
+                option.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddHttpClient("meta", c =>
             {
                 c.BaseAddress = new Uri(Configuration.GetValue<string>("MetaAPI"));

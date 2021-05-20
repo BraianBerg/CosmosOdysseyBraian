@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Configuration;
+using System.Threading;
 
 namespace CosmosOdyssey.ApplicationServices
 {
@@ -38,170 +39,332 @@ namespace CosmosOdyssey.ApplicationServices
 
         public async void PostRootData()
         {
-
-
-            
-            // var client = _clientFactory.CreateClient("meta");
-            Rootobject rootobject = new Rootobject();
-            //  rootobject = await client.GetFromJsonAsync<Rootobject>("v1.0/TravelPrices");
-            rootobject = await GetDataFromJson();
-
-            // outgoing data to db
-            PriceListDomain priceList = new PriceListDomain();
-        //    LegDomain leg = new LegDomain();
-        //    ProviderDomain provider = new ProviderDomain();
-        //    RouteinfoDomain routeinfo = new RouteinfoDomain();
-         //   ToDomain to = new ToDomain();
-          //  FromDomain from = new FromDomain();
-         //   CompanyDomain company = new CompanyDomain();
-            IdAi aiid = new IdAi();
-            
-
-            //rootobj
-            priceList.Id = rootobject.Id;
-            priceList.ValidUntil = rootobject.ValidUntil;
-
-
-
-            // takes compnayid from db
-        /*    var CompanyChek = _context.CompanyDomains;
-            List<string> cchek = new List<string>();
-            foreach (var comp in CompanyChek)
+            //CancellationToken cancelationToken
+            //!cancelationToken.IsCancellationRequested
+            if (true)
             {
-                cchek.Add(comp.Id);
-            }
-        */
-            //cheks if pricelist is dupicate or not
-            var PriceIdChek = _context.PriceListDomains;
-            List<string> PriceId = new List<string>();
-            foreach (var key in PriceIdChek)
-            {
-                PriceId.Add(key.Id);
-            }
-            if (!PriceId.Contains(rootobject.Id))
-            {
-                //////
-             //  ChekAndDeleteOldPriceList();
-              
-                /////
-                _context.PriceListDomains.Add(priceList);
-                //   priceList = new PriceListDomain();
-                await _context.SaveChangesAsync();
 
-                aiid.PriceListDomainId = priceList.Id;
-                _context.IdAi.Add(aiid);
-                await _context.SaveChangesAsync();
-
-                ProviderAllDomain providerAll = new ProviderAllDomain();
-                for (int t = 0; t < rootobject.Legs.Length; t++)
+                int chek = _context.IdAi.Count();
+                // should be locked to 15
+                if (chek > 15)
                 {
+                    Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!");
+                    var row = await _context.IdAi.OrderBy(e => e.Id).FirstOrDefaultAsync();
+                    var priceListId = await _context.IdAi.FindAsync(row.Id);
 
-                    for (int i = 0; i < rootobject.Legs[t].Providers.Length; i++)
+
+                    IdAi test3 = await _context.IdAi.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+
+                    PriceListDomain test4 = await _context.PriceListDomains.FirstOrDefaultAsync(x => x.Id == priceListId.PriceListDomainId);
+                    if (test3 != null)
                     {
-
-                        providerAll.Distance = rootobject.Legs[t].RouteInfo.Distance;
-                        providerAll.PriceListDomainId = priceList.Id;
-                        providerAll.LegId = rootobject.Legs[t].Id;
-                        providerAll.RouteInfoId = rootobject.Legs[t].RouteInfo.Id;
-                        providerAll.From = rootobject.Legs[t].RouteInfo.From.Name;
-                        providerAll.FromId = rootobject.Legs[t].RouteInfo.From.Id;
-                        providerAll.To = rootobject.Legs[t].RouteInfo.To.Name;
-                        providerAll.ToId = rootobject.Legs[t].RouteInfo.To.Id;
-
-                        providerAll.ProviderId = rootobject.Legs[t].Providers[i].Id;
-                        providerAll.Price = rootobject.Legs[t].Providers[i].Price;
-                        providerAll.CompanyId = rootobject.Legs[t].Providers[i].Company.Id;
-                        providerAll.CompanyName = rootobject.Legs[t].Providers[i].Company.Name;
-                        providerAll.FlightStart = rootobject.Legs[t].Providers[i].FlightStart;
-                        providerAll.FlightEnd = rootobject.Legs[t].Providers[i].FlightEnd;
-
-                       _context.ProviderAllDomains.Add(providerAll);
+                        _context.IdAi.Remove(test3);
                         await _context.SaveChangesAsync();
                     }
-                }
 
-               
-                //  _context.PriceListDomains.OrderByDescending(o => o.Key).FirstOrDefault();
-                //   var test = _context.PriceListDomains.FirstOrDefault(); 
-                //legs array loop first dimension
-                /*
-                for (int t = 0; t < rootobject.Legs.Length; t++)
-                {
-
-
-                    //leg class 
-                    leg.PriceListDomainId = priceList.Id;
-                    leg.Id = rootobject.Legs[t].Id;
-                    leg.RouteInfoDomainId = rootobject.Legs[t].RouteInfo.Id;
-
-
-
-                    //routeinfo //Leg[0]
-                    routeinfo.Id = rootobject.Legs[t].RouteInfo.Id;
-                    routeinfo.FromDomainId = rootobject.Legs[t].RouteInfo.From.Id;
-                    routeinfo.ToDomainId = rootobject.Legs[t].RouteInfo.To.Id;
-                    routeinfo.Distance = rootobject.Legs[t].RouteInfo.Distance;
-                    routeinfo.PriceListDomainId = priceList.Id;
-                    //to // routeinfo // leg[0]
-                    to.Id = rootobject.Legs[t].RouteInfo.To.Id;
-                    to.Name = rootobject.Legs[t].RouteInfo.To.Name;
-                    to.PriceListDomainId = priceList.Id;
-                    // from // routeinfo // leg[0]
-                    from.Id = rootobject.Legs[t].RouteInfo.From.Id;
-                    from.Name = rootobject.Legs[t].RouteInfo.From.Name;
-                    from.PriceListDomainId = priceList.Id;
-                    // providerarray loop secon dimension 
-                    for (int i = 0; i < rootobject.Legs[t].Providers.Length; i++)
+                    RegistrationModelDomain test2 = new RegistrationModelDomain();
+                    while (test2 != null)
                     {
-                        // provider[0] // leg[0]
-                        provider.Id = rootobject.Legs[t].Providers[i].Id;
-                        provider.CompanyDomainId = rootobject.Legs[t].Providers[i].Company.Id;
-                        provider.Price = rootobject.Legs[t].Providers[i].Price;
-                        provider.FlightStart = rootobject.Legs[t].Providers[i].FlightStart;
-                        provider.FlightEnd = rootobject.Legs[t].Providers[i].FlightEnd;
-                        provider.PriceListDomainId = priceList.Id;
-
-
-                        //company  // provider[0] // leg[0]
-                        company.Id = rootobject.Legs[t].Providers[i].Company.Id;
-                        company.Name = rootobject.Legs[t].Providers[i].Company.Name;
-                        company.PriceListDomainId = priceList.Id;
-                        if (cchek.Contains(rootobject.Legs[t].Providers[i].Company.Id))
+                        test2 = await _context.RegistrationModelDomain.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+                        if (test2 != null)
                         {
+                            _context.RegistrationModelDomain.Remove(test2);
+                            await _context.SaveChangesAsync();
+                        }
 
+
+                    }
+
+                    ProviderAllDomain? test1 = new ProviderAllDomain();
+                    while (test1 != null)
+                    {
+                        test1 = await _context.ProviderAllDomains.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+                        if (test1 != null)
+                        {
+                            _context.ProviderAllDomains.Remove(test1);
+                            await _context.SaveChangesAsync();
                         }
                         else
                         {
-                            cchek.Add(rootobject.Legs[t].Providers[i].Company.Id);
-                            _context.CompanyDomains.Add(company);
+                            break;
                         }
-                        _context.ProviderDomains.Add(provider);
-                        await _context.SaveChangesAsync();
-                        company = new CompanyDomain();
-                        provider = new ProviderDomain();
 
                     }
 
-                    _context.FromDomains.Add(from);
-                    from = new FromDomain();
-                    _context.ToDomains.Add(to);
-                    to = new ToDomain();
-                    _context.RouteinfoDomains.Add(routeinfo);
-                    routeinfo = new RouteinfoDomain();
-                    _context.LegDomains.Add(leg);
-                    leg = new LegDomain();
-                    await _context.SaveChangesAsync();
-                }
-                //  await _context.SaveChangesAsync();
-                //  await _context.SaveChangesAsync();
+                    if (test4 != null)
+                    {
+                        _context.PriceListDomains.Remove(test4);
+                        await _context.SaveChangesAsync();
 
-                await _context.SaveChangesAsync();
+                    }
+                    Console.WriteLine("some stuff was deleted");
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    /*
+
+                    int Key = row.Id;
+
+                    if (priceListId == null)
+                    {
+
+                        Console.WriteLine("sellist asja ple siin");
+                    }
+                    var priceList = await _context.PriceListDomains.FindAsync(priceListId.PriceListDomainId);
+                    if (priceList == null)
+                    {
+                        Console.WriteLine("kuidas see sai juhtuda");
+                    }
+                    else
+                    {
+                        _context.IdAi.Attach(row);
+                        _context.IdAi.Remove(row);
+                        await _context.SaveChangesAsync();
+                        _context.PriceListDomains.Attach(priceList);
+                        _context.PriceListDomains.Remove(priceList);
+
+                        */
+
+                    // _context.PriceListDomains.Remove(await _context.ProviderAllDomains.FindAsync(e=>e.PriceListDomainId == priceList.Id));
+
+
+                    //  await _context.SaveChangesAsync();
+
+                    // var providerpricelist = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(priceListId.PriceListDomainId));
+                    /*   var providerpricelistmapped = new ProviderAllDomain();
+                       foreach (var item in providerpricelist)
+                       {
+                           providerpricelistmapped.ProviderId = item.ProviderId;
+                           providerpricelistmapped.Price = item.Price;
+                           providerpricelistmapped.FlightStart = item.FlightStart;
+                           providerpricelistmapped.FlightEnd = item.FlightEnd;
+                           providerpricelistmapped.CompanyName = item.CompanyName;
+                           providerpricelistmapped.CompanyId = item.CompanyId;
+                           providerpricelistmapped.To = item.To;
+                           providerpricelistmapped.ToId = item.ToId;
+                           providerpricelistmapped.From = item.From;
+                           providerpricelistmapped.FromId = item.FromId;
+                           providerpricelistmapped.RouteInfoId = item.RouteInfoId;
+                           providerpricelistmapped.Distance = item.Distance;
+                           providerpricelistmapped.LegId = item.LegId;
+                           providerpricelistmapped.PriceListDomainId = item.PriceListDomainId;
+
+                       }
+                       //  _context.ProviderAllDomains.Attach(providerpricelistmapped);
+                       _context.ProviderAllDomains.Remove(providerpricelistmapped);
+                       await _context.SaveChangesAsync();
+
+                       */
+
+
+
+
+
+
+
+
+
+
+                    //}
+                }
+                else
+                {
+                    Console.WriteLine("No need to delete stuff");
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // var client = _clientFactory.CreateClient("meta");
+                Rootobject rootobject = new Rootobject();
+                //  rootobject = await client.GetFromJsonAsync<Rootobject>("v1.0/TravelPrices");
+                rootobject = await GetDataFromJson();
+
+                // outgoing data to db
+                PriceListDomain priceList = new PriceListDomain();
+                //    LegDomain leg = new LegDomain();
+                //    ProviderDomain provider = new ProviderDomain();
+                //    RouteinfoDomain routeinfo = new RouteinfoDomain();
+                //   ToDomain to = new ToDomain();
+                //  FromDomain from = new FromDomain();
+                //   CompanyDomain company = new CompanyDomain();
+                IdAi aiid = new IdAi();
+
+              
+
+                //rootobj
+                priceList.Id = rootobject.Id;
+                priceList.ValidUntil = rootobject.ValidUntil;
+
+
+
+                // takes compnayid from db
+                /*    var CompanyChek = _context.CompanyDomains;
+                    List<string> cchek = new List<string>();
+                    foreach (var comp in CompanyChek)
+                    {
+                        cchek.Add(comp.Id);
+                    }
                 */
+                //cheks if pricelist is dupicate or not
+                var PriceIdChek = _context.PriceListDomains;
+                List<string> PriceId = new List<string>();
+                foreach (var key in PriceIdChek)
+                {
+                    PriceId.Add(key.Id);
+                }
+                if (!PriceId.Contains(rootobject.Id))
+                {
+                    //////
+                  
+                   
+
+                    /////
+                    _context.PriceListDomains.Add(priceList);
+                    //   priceList = new PriceListDomain();
+                    await _context.SaveChangesAsync();
+
+                    aiid.PriceListDomainId = priceList.Id;
+                    _context.IdAi.Add(aiid);
+                    await _context.SaveChangesAsync();
+
+                    ProviderAllDomain providerAll = new ProviderAllDomain();
+                    for (int t = 0; t < rootobject.Legs.Length; t++)
+                    {
+
+                        for (int i = 0; i < rootobject.Legs[t].Providers.Length; i++)
+                        {
+
+                            providerAll.Distance = rootobject.Legs[t].RouteInfo.Distance;
+                            providerAll.PriceListDomainId = priceList.Id;
+                            providerAll.LegId = rootobject.Legs[t].Id;
+                            providerAll.RouteInfoId = rootobject.Legs[t].RouteInfo.Id;
+                            providerAll.From = rootobject.Legs[t].RouteInfo.From.Name;
+                            providerAll.FromId = rootobject.Legs[t].RouteInfo.From.Id;
+                            providerAll.To = rootobject.Legs[t].RouteInfo.To.Name;
+                            providerAll.ToId = rootobject.Legs[t].RouteInfo.To.Id;
+
+                            providerAll.ProviderId = rootobject.Legs[t].Providers[i].Id;
+                            providerAll.Price = rootobject.Legs[t].Providers[i].Price;
+                            providerAll.CompanyId = rootobject.Legs[t].Providers[i].Company.Id;
+                            providerAll.CompanyName = rootobject.Legs[t].Providers[i].Company.Name;
+                            providerAll.FlightStart = rootobject.Legs[t].Providers[i].FlightStart;
+                            providerAll.FlightEnd = rootobject.Legs[t].Providers[i].FlightEnd;
+
+                            _context.ProviderAllDomains.Add(providerAll);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+
+
+                    //  _context.PriceListDomains.OrderByDescending(o => o.Key).FirstOrDefault();
+                    //   var test = _context.PriceListDomains.FirstOrDefault(); 
+                    //legs array loop first dimension
+                    /*
+                    for (int t = 0; t < rootobject.Legs.Length; t++)
+                    {
+
+
+                        //leg class 
+                        leg.PriceListDomainId = priceList.Id;
+                        leg.Id = rootobject.Legs[t].Id;
+                        leg.RouteInfoDomainId = rootobject.Legs[t].RouteInfo.Id;
+
+
+
+                        //routeinfo //Leg[0]
+                        routeinfo.Id = rootobject.Legs[t].RouteInfo.Id;
+                        routeinfo.FromDomainId = rootobject.Legs[t].RouteInfo.From.Id;
+                        routeinfo.ToDomainId = rootobject.Legs[t].RouteInfo.To.Id;
+                        routeinfo.Distance = rootobject.Legs[t].RouteInfo.Distance;
+                        routeinfo.PriceListDomainId = priceList.Id;
+                        //to // routeinfo // leg[0]
+                        to.Id = rootobject.Legs[t].RouteInfo.To.Id;
+                        to.Name = rootobject.Legs[t].RouteInfo.To.Name;
+                        to.PriceListDomainId = priceList.Id;
+                        // from // routeinfo // leg[0]
+                        from.Id = rootobject.Legs[t].RouteInfo.From.Id;
+                        from.Name = rootobject.Legs[t].RouteInfo.From.Name;
+                        from.PriceListDomainId = priceList.Id;
+                        // providerarray loop secon dimension 
+                        for (int i = 0; i < rootobject.Legs[t].Providers.Length; i++)
+                        {
+                            // provider[0] // leg[0]
+                            provider.Id = rootobject.Legs[t].Providers[i].Id;
+                            provider.CompanyDomainId = rootobject.Legs[t].Providers[i].Company.Id;
+                            provider.Price = rootobject.Legs[t].Providers[i].Price;
+                            provider.FlightStart = rootobject.Legs[t].Providers[i].FlightStart;
+                            provider.FlightEnd = rootobject.Legs[t].Providers[i].FlightEnd;
+                            provider.PriceListDomainId = priceList.Id;
+
+
+                            //company  // provider[0] // leg[0]
+                            company.Id = rootobject.Legs[t].Providers[i].Company.Id;
+                            company.Name = rootobject.Legs[t].Providers[i].Company.Name;
+                            company.PriceListDomainId = priceList.Id;
+                            if (cchek.Contains(rootobject.Legs[t].Providers[i].Company.Id))
+                            {
+
+                            }
+                            else
+                            {
+                                cchek.Add(rootobject.Legs[t].Providers[i].Company.Id);
+                                _context.CompanyDomains.Add(company);
+                            }
+                            _context.ProviderDomains.Add(provider);
+                            await _context.SaveChangesAsync();
+                            company = new CompanyDomain();
+                            provider = new ProviderDomain();
+
+                        }
+
+                        _context.FromDomains.Add(from);
+                        from = new FromDomain();
+                        _context.ToDomains.Add(to);
+                        to = new ToDomain();
+                        _context.RouteinfoDomains.Add(routeinfo);
+                        routeinfo = new RouteinfoDomain();
+                        _context.LegDomains.Add(leg);
+                        leg = new LegDomain();
+                        await _context.SaveChangesAsync();
+                    }
+                    //  await _context.SaveChangesAsync();
+                    //  await _context.SaveChangesAsync();
+
+                    await _context.SaveChangesAsync();
+                    */
+                }
+                else
+                {
+                    Console.WriteLine("this pricelist is allready in database");
+                }
             }
-            else
-            {
-                Console.WriteLine("this pricelist is allready in database");
-            }
+  
 
         }
         // will get data from api and pass it in to models
@@ -256,6 +419,7 @@ namespace CosmosOdyssey.ApplicationServices
             // should be locked to 15
             if (chek > 0)
             {
+                Console.WriteLine("!!!!!!!!!!!!!!!!!!!!!");
                 var row = await _context.IdAi.OrderBy(e => e.Id).FirstOrDefaultAsync();
                 var priceListId = await _context.IdAi.FindAsync(row.Id);
 

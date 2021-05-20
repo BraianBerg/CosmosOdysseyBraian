@@ -1,4 +1,4 @@
-﻿@page "/counter"
+﻿@page "/flights"
 
 @inject IPriceListServices PriceService
 @inject ILocalStorageService LocalStorage
@@ -6,7 +6,6 @@
 
 <h1>Counter</h1>
 <p>Current count: @currentCount</p>
-<button class="btn btn-primary" @onclick="@PriceService.ChekAndDeleteOldPriceList">UPDATE DB</button>
 
 @if (displayModels == null)
 {
@@ -104,31 +103,35 @@ else
     protected override async Task OnInitializedAsync()
     {
         displayModels = await PriceService.GetSpaceTravelDataDomain();
+        PriceService.PostRootData();
+   
     }
 
     protected async Task addToCart(string ProviderId)
     {
         DateTime valid = await PriceService.GetValidUntil();
 
-      //  if ( valid >= DateTime.Now)
-      //  {
-            var cart = await LocalStorage.GetItemAsync<List<DisplayModel>>("cart");
-            if (cart == null)
-            {
-                cart = new List<DisplayModel>();
-            }
+        //  if ( valid >= DateTime.Now)
+        //  {
+        var cart = await LocalStorage.GetItemAsync<List<DisplayModel>>("cart");
+        if (cart == null)
+        {
+            cart = new List<DisplayModel>();
+        }
 
-            var selectedFlight = (from x in displayModels
-                                  where x.ProviderId == ProviderId
-                                  select x).First();
-            cart.Add(selectedFlight);
-            await LocalStorage.SetItemAsync("cart", cart);
-            ToastService.ShowSuccess("Added To cart");
-      //  }
-     //   else
-    //    {
+        var selectedFlight = (from x in displayModels
+                              where x.ProviderId == ProviderId
+                              select x).First();
+        cart.Add(selectedFlight);
+        await LocalStorage.SetItemAsync("cart", cart);
+        ToastService.ShowSuccess("Added To cart");
+        //  }
+        //   else
+        //    {
         //    errorString = $"This price list is not valid anymore, it was valid until: {valid}. Please try again bit later!";
-    //    }
+        //    }
+        ////<button class="btn btn-primary" @onclick="@PriceService.ChekAndDeleteOldPriceList">UPDATE DB</button>
+
 
     }
 
