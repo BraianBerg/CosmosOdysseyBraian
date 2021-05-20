@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CosmosOdyssey.Data.Migrations
 {
     [DbContext(typeof(CosmosOdysseyDbContext))]
-    [Migration("20210517173539_proov46")]
-    partial class proov46
+    [Migration("20210519190445_30-first")]
+    partial class _30first
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -102,6 +102,40 @@ namespace CosmosOdyssey.Data.Migrations
                     b.ToTable("ProviderAllDomains");
                 });
 
+            modelBuilder.Entity("CosmosOdyssey.Core.Domain.RegistrationModelDomain", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Companys")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PriceListDomainId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Routes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<float>("TotalPrice")
+                        .HasColumnType("real");
+
+                    b.Property<string>("TotalTravelTime")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PriceListDomainId");
+
+                    b.ToTable("RegistrationModelDomain");
+                });
+
             modelBuilder.Entity("CosmosOdyssey.Core.Domain.IdAi", b =>
                 {
                     b.HasOne("CosmosOdyssey.Core.Domain.PriceListDomain", "PriceListDomain")
@@ -112,6 +146,15 @@ namespace CosmosOdyssey.Data.Migrations
                 });
 
             modelBuilder.Entity("CosmosOdyssey.Core.Domain.ProviderAllDomain", b =>
+                {
+                    b.HasOne("CosmosOdyssey.Core.Domain.PriceListDomain", "PriceListDomain")
+                        .WithMany()
+                        .HasForeignKey("PriceListDomainId");
+
+                    b.Navigation("PriceListDomain");
+                });
+
+            modelBuilder.Entity("CosmosOdyssey.Core.Domain.RegistrationModelDomain", b =>
                 {
                     b.HasOne("CosmosOdyssey.Core.Domain.PriceListDomain", "PriceListDomain")
                         .WithMany()

@@ -1,5 +1,5 @@
 ﻿@page "/fetchdata"
-@using CosmosOdyssey.ApplicationServices 
+@using CosmosOdyssey.ApplicationServices
 @using CosmosOdysseyUI.Data
 @inject WeatherForecastService ForecastService
 @inject IPriceListServices PriceService
@@ -7,6 +7,9 @@
 
 <p>This component demonstrates fetching data from a service.</p>
 <button class="btn btn-primary" @onclick="@PriceService.PostRootData"> SEED DB</button>
+<button class="btn btn-primary" @onclick="@PriceService.ChekAndDeleteOldPriceList"> delete DB</button>
+
+
 
 @if (forecasts == null)
 {

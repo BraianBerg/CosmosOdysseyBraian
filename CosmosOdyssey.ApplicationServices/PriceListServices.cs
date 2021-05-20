@@ -14,7 +14,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Data;
+using System.Configuration;
 
 namespace CosmosOdyssey.ApplicationServices
 {
@@ -24,12 +25,14 @@ namespace CosmosOdyssey.ApplicationServices
     {
 
         private readonly CosmosOdysseyDbContext _context;
+        private readonly CosmosOdysseyDbContext Context;
         private readonly IHttpClientFactory _clientFactory;
 
-        public PriceListServices(IHttpClientFactory clientFactory, CosmosOdysseyDbContext context)
+        public PriceListServices(IHttpClientFactory clientFactory, CosmosOdysseyDbContext context, CosmosOdysseyDbContext Context)
         {
             _clientFactory = clientFactory;
             _context = context;
+            this.Context = Context;
         }
         //Task<ActionResult<PriceListDomain>>
 
@@ -37,7 +40,7 @@ namespace CosmosOdyssey.ApplicationServices
         {
 
 
-
+            
             // var client = _clientFactory.CreateClient("meta");
             Rootobject rootobject = new Rootobject();
             //  rootobject = await client.GetFromJsonAsync<Rootobject>("v1.0/TravelPrices");
@@ -77,6 +80,10 @@ namespace CosmosOdyssey.ApplicationServices
             }
             if (!PriceId.Contains(rootobject.Id))
             {
+                //////
+             //  ChekAndDeleteOldPriceList();
+              
+                /////
                 _context.PriceListDomains.Add(priceList);
                 //   priceList = new PriceListDomain();
                 await _context.SaveChangesAsync();
@@ -207,37 +214,235 @@ namespace CosmosOdyssey.ApplicationServices
             return rootobject;
         }
 
-        
-       public async Task<DisplayModel[]> SearchForFlight(string FromSearchStirng, string ToSearchString)
+        public async Task<DateTime> GetValidUntil()
+        {
+            var row = await _context.IdAi.OrderByDescending(e => e.Id).FirstOrDefaultAsync();
+            var row2 = _context.PriceListDomains.Where(e => e.Id.Contains(row.PriceListDomainId));
+            DateTime validUntil = new DateTime();
+            foreach (var item in row2)
+            {
+                validUntil = item.ValidUntil;
+            }
+
+            return validUntil;
+        }
+
+        public async Task<List<RegistrationModel>> GetRegisteredPeople()
+        {
+            List<RegistrationModel> registeredpeople = new List<RegistrationModel>();
+            var RegPeople = await _context.RegistrationModelDomain.ToListAsync();
+            foreach (var item in RegPeople)
+            {
+                registeredpeople.Add(new RegistrationModel
+                {
+                    Routes = item.Routes,
+                    Companys = item.Companys,
+                    TotalPrice = item.TotalPrice,
+                    FirstName = item.FirstName,
+                    LastName = item.LastName,
+                    TotalTravelTime= item.TotalTravelTime
+
+                });
+            }
+
+
+            return registeredpeople;
+        }
+
+        ///deletes last record based on AIID id 
+        public async void ChekAndDeleteOldPriceList()
+        {
+            int chek = _context.IdAi.Count();
+            // should be locked to 15
+            if (chek > 0)
+            {
+                var row = await _context.IdAi.OrderBy(e => e.Id).FirstOrDefaultAsync();
+                var priceListId = await _context.IdAi.FindAsync(row.Id);
+
+               
+                IdAi test3 = await _context.IdAi.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+               
+                PriceListDomain  test4 = await _context.PriceListDomains.FirstOrDefaultAsync(x => x.Id == priceListId.PriceListDomainId);
+                if (test3 != null)
+                {
+                    _context.IdAi.Remove(test3);
+                    await _context.SaveChangesAsync();
+                }
+
+                RegistrationModelDomain test2 = new RegistrationModelDomain();
+                while (test2 != null)
+                {
+                    test2 = await _context.RegistrationModelDomain.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+                    if (test2 != null)
+                    {
+                    _context.RegistrationModelDomain.Remove(test2);
+                    await _context.SaveChangesAsync();
+                    }
+
+                       
+                }
+
+                 ProviderAllDomain ? test1 = new ProviderAllDomain();
+                while (test1 != null)
+                {
+                     test1  = await _context.ProviderAllDomains.FirstOrDefaultAsync(x => x.PriceListDomainId == priceListId.PriceListDomainId);
+                    if (test1 != null)
+                    {
+                        _context.ProviderAllDomains.Remove(test1);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        break;
+                    }
+                 
+                }
+
+                if (test4 != null)
+                {
+                    _context.PriceListDomains.Remove(test4);
+                    await _context.SaveChangesAsync();
+
+                }
+                Console.WriteLine("some stuff was deleted");
+
+
+
+
+
+
+
+
+
+
+
+
+
+                /*
+
+                int Key = row.Id;
+              
+                if (priceListId == null)
+                {
+
+                    Console.WriteLine("sellist asja ple siin");
+                }
+                var priceList = await _context.PriceListDomains.FindAsync(priceListId.PriceListDomainId);
+                if (priceList == null)
+                {
+                    Console.WriteLine("kuidas see sai juhtuda");
+                }
+                else
+                {
+                    _context.IdAi.Attach(row);
+                    _context.IdAi.Remove(row);
+                    await _context.SaveChangesAsync();
+                    _context.PriceListDomains.Attach(priceList);
+                    _context.PriceListDomains.Remove(priceList);
+
+                    */
+
+                    // _context.PriceListDomains.Remove(await _context.ProviderAllDomains.FindAsync(e=>e.PriceListDomainId == priceList.Id));
+
+
+                    //  await _context.SaveChangesAsync();
+
+                    // var providerpricelist = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(priceListId.PriceListDomainId));
+                 /*   var providerpricelistmapped = new ProviderAllDomain();
+                    foreach (var item in providerpricelist)
+                    {
+                        providerpricelistmapped.ProviderId = item.ProviderId;
+                        providerpricelistmapped.Price = item.Price;
+                        providerpricelistmapped.FlightStart = item.FlightStart;
+                        providerpricelistmapped.FlightEnd = item.FlightEnd;
+                        providerpricelistmapped.CompanyName = item.CompanyName;
+                        providerpricelistmapped.CompanyId = item.CompanyId;
+                        providerpricelistmapped.To = item.To;
+                        providerpricelistmapped.ToId = item.ToId;
+                        providerpricelistmapped.From = item.From;
+                        providerpricelistmapped.FromId = item.FromId;
+                        providerpricelistmapped.RouteInfoId = item.RouteInfoId;
+                        providerpricelistmapped.Distance = item.Distance;
+                        providerpricelistmapped.LegId = item.LegId;
+                        providerpricelistmapped.PriceListDomainId = item.PriceListDomainId;
+
+                    }
+                    //  _context.ProviderAllDomains.Attach(providerpricelistmapped);
+                    _context.ProviderAllDomains.Remove(providerpricelistmapped);
+                    await _context.SaveChangesAsync();
+
+                    */
+
+
+
+
+
+
+
+
+
+
+               //}
+                }
+            else
+            {
+                Console.WriteLine("No need to delete stuff");
+            }
+
+        }
+
+        public async Task<List<DisplayModel>> SearchForFlight(string FromSearchStirng, string ToSearchString, string? Company)
        {
 
 
             var PriceListId = await _context.IdAi.OrderByDescending(e => e.Id).FirstOrDefaultAsync();
             var midagi  = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
             int NumberOfMachingData = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId)).Count();
-            DisplayModel[] displayModel = new DisplayModel[NumberOfMachingData];
-            DisplayModel[] displayModel2 = new DisplayModel[300];
-            for (int i = 0; i < displayModel.Length; i++)
-            {
-                displayModel[i] = new DisplayModel();
-            }
+            List<DisplayModel> displayModel = new List<DisplayModel>();
+           
             if (PriceListId.PriceListDomainId != null)
             {
                 if (NumberOfMachingData != 0)
                 {
-                    int R = 0;
-                    foreach (var item in midagi)
+                    if (Company == null)
                     {
-                        displayModel[R].Form = item.From;
-                        displayModel[R].To = item.To;
-                        displayModel[R].FlightStart = item.FlightStart;
-                        displayModel[R].FlightEnd = item.FlightEnd;
-                        displayModel[R].PriceListId = item.PriceListDomainId;
-                        displayModel[R].CompanyName = item.CompanyName;
-                        displayModel[R].TravelTime = displayModel[R].FlightEnd.Subtract(displayModel[R].FlightStart);
-                        R++;
+                        foreach (var item in midagi)
+                        {
+                            displayModel.Add(new DisplayModel
+                            {
+                                ProviderId = item.ProviderId,
+                                Form = item.From,
+                                To = item.To,
+                                FlightStart = item.FlightStart,
+                                FlightEnd = item.FlightEnd,
+                                PriceListId = item.PriceListDomainId,
+                                CompanyName = item.CompanyName,
+                                Price = item.Price,
+                                TravelTime = item.FlightEnd.Subtract(item.FlightStart)
+                            });
+                        }
+                    }
+                    else
+                    {
+                        var midagi2 = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId) && e.CompanyName.Contains(Company));
+                        foreach (var item in midagi2)
+                        {
+                            displayModel.Add(new DisplayModel
+                            {
+                                ProviderId = item.ProviderId,
+                                Form = item.From,
+                                To = item.To,
+                                FlightStart = item.FlightStart,
+                                FlightEnd = item.FlightEnd,
+                                PriceListId = item.PriceListDomainId,
+                                CompanyName = item.CompanyName,
+                                Price = item.Price,
+                                TravelTime = item.FlightEnd.Subtract(item.FlightStart)
+                            });
+                        }
                     }
                 }
+                   
                 else 
                 {
                     var midagi1 = _context.ProviderAllDomains.Where(e => e.From.Contains(FromSearchStirng) && e.To.Contains(ToSearchString) && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
@@ -248,26 +453,26 @@ namespace CosmosOdyssey.ApplicationServices
                 
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             return displayModel;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             /*
              var Leg0 = _context.ProviderAllDomains.Where(e => e.From.Contains("Earth") && e.To.Contains("Jupiter") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
              var Leg1 = _context.ProviderAllDomains.Where(e => e.From.Contains("Earth") && e.To.Contains("Uranus") && e.PriceListDomainId.Contains(PriceListId.PriceListDomainId));
@@ -933,7 +1138,7 @@ namespace CosmosOdyssey.ApplicationServices
 
         }
 
-        public async Task<DisplayModel[]> GetSpaceTravelDataDomain()
+        public async Task<List<DisplayModel>> GetSpaceTravelDataDomain()
         {
     
 
@@ -943,16 +1148,29 @@ namespace CosmosOdyssey.ApplicationServices
             int NumberOfMachingData = _context.ProviderAllDomains.Where(e => e.PriceListDomainId.Contains(PriceListId.PriceListDomainId)).Count();
             // IQueryable<LegDomain> query = _context.LegDomains;
             //  query.OrderByDescending(LegDomain.);
-            DisplayModel[] displayModel = new DisplayModel[NumberOfMachingData];
-            for (int i = 0; i < displayModel.Length; i++)
-            {
-                displayModel[i] = new DisplayModel();
-            }
+            List<DisplayModel> displayModel = new List<DisplayModel>();
+         
             if (PriceListId.PriceListDomainId != null)
-            {
-                int i = 0;
+            {              
                 foreach (var item in Data)
                 {
+                    displayModel.Add(new DisplayModel
+                    {
+                        ProviderId = item.ProviderId,
+                        Form = item.From,
+                        To = item.To,
+                        FlightStart =item.FlightStart,
+                        FlightEnd = item.FlightEnd,
+                        PriceListId = item.PriceListDomainId,
+                        CompanyName = item.CompanyName,
+                        Price = item.Price,
+                        TravelTime = item.FlightEnd.Subtract(item.FlightStart)
+                    });
+                    
+                        
+
+
+                        /*displayModel[i].ProviderId = item.ProviderId;
                         displayModel[i].Form = item.From;
                         displayModel[i].To = item.To;
                         displayModel[i].FlightStart = item.FlightStart;
@@ -960,7 +1178,7 @@ namespace CosmosOdyssey.ApplicationServices
                         displayModel[i].PriceListId = item.PriceListDomainId;
                         displayModel[i].CompanyName = item.CompanyName;
                         displayModel[i].TravelTime = displayModel[i].FlightEnd.Subtract(displayModel[i].FlightStart);
-                        i++;
+                        i++;*/
                  
           
                 }
@@ -978,6 +1196,20 @@ namespace CosmosOdyssey.ApplicationServices
             //await query.ToListAsync();
         }
         
+        public async void PostRegData(RegistrationModel regModel)
+        {
+            RegistrationModelDomain domainReg = new RegistrationModelDomain();
+
+            domainReg.Companys = regModel.Companys;
+            domainReg.FirstName = regModel.FirstName;
+            domainReg.LastName = regModel.LastName;
+            domainReg.Routes = regModel.Routes;
+            domainReg.TotalPrice = regModel.TotalPrice;
+            domainReg.TotalTravelTime = regModel.TotalTravelTime;
+            domainReg.PriceListDomainId = regModel.PriceListId;
+            _context.RegistrationModelDomain.Add(domainReg);
+             await _context.SaveChangesAsync();
+        }
   
 
 
@@ -987,21 +1219,9 @@ namespace CosmosOdyssey.ApplicationServices
 
 
 
-        /*
-        ///delete shit based on id 
-        public async void DeleteOldPriceList(string id)
-        {
-            var priceList = await _context.PriceListDomains.FindAsync(id);
-            if (priceList == null)
-            {
-
-                Console.WriteLine("sellist asja ple siin");
-            }
-
-            _context.PriceListDomains.Remove(priceList);
-            await _context.SaveChangesAsync();
-        }
-        */
+        
+       
+        
 
 
 

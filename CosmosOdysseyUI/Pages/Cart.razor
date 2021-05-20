@@ -1,0 +1,189 @@
+﻿@page "/cart"
+@inject ICartService CartService
+@inject IPriceListServices PriceService
+<h3></h3>
+@if (cartItems == null || cartItems.Count <= 0)
+{
+    <span>You have no items in your cart.</span>
+}
+else
+{
+
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th>From</th>
+                <th>----></th>
+                <th>To </th>
+                <th>FlightStart</th>
+                <th>FlightEnd</th>
+                <th>Company</th>
+                <th>TravelTime</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in cartItems)
+            {
+                <tr>
+                    <td>@item.Form</td>
+                    <td>---></td>
+                    <td>@item.To</td>
+                    <td>@item.FlightStart</td>
+                    <td>@item.FlightEnd</td>
+                    <td>@item.CompanyName</td>
+                    <td>@item.TravelTime</td>
+                    <td>@item.Price€</td>
+                    
+                    <td>
+                        <button class="btn btn-danger" @onclick="(() => DeleteItem(item))">Remove From Cart</button>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+    </table>
+    <div>
+        Total (@cartItems.Count): $@cartItems.Sum(item => item.Price) @ToHumanReadableString(time)
+    </div>
+    <h3 style="color:red">@errormessege</h3>
+    <label class="sr-only" for="filter-From">Filter</label>
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="FirstName"
+           placeholder="First Name" required/>
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="LastName"
+           placeholder="Last Name" required/>
+    <button type="button" class="btn btn-success mb-2 mr-sm-2" @onclick="Register">Register</button>
+
+}
+@code {
+    private string CurrentPriceListId = string.Empty;
+    private string FirstName;
+    private string LastName;
+    private RegistrationModel regModel = new RegistrationModel();
+    List<string> Companys = new List<string>();
+    List<string> Routes = new List<string>();
+    TimeSpan time = new TimeSpan();
+    string errormessege = string.Empty;
+    DateTime valid = new DateTime();
+
+    List<DisplayModel> cartItems = new List<DisplayModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        cartItems = await CartService.GetCartItems();
+        time = AddTime();
+    }
+
+    private async void DeleteItem(DisplayModel item)
+    {
+        await CartService.DeleteItem(item);
+        cartItems = await CartService.GetCartItems();
+    }
+
+    private TimeSpan AddTime()
+    {
+        foreach (var item in cartItems)
+        {
+
+
+            time = time.Add(item.TravelTime);
+        }
+        return time;
+    }
+    private string CompaysToString()
+    {
+        string companys= string.Empty;
+        foreach (var item in cartItems)
+        {
+            Companys.Add(item.CompanyName);
+        }
+        foreach (var item in Companys)
+        {
+            if (companys == string.Empty)
+            {
+                companys = item;
+            }
+            companys.Concat(", "+item);
+        }
+        return companys;
+    }
+    private string RoutesToString()
+    {
+        string routes = string.Empty;
+        foreach (var item in cartItems)
+        {
+            Routes.Add($"{item.Form}-->{item.To}");
+        }
+        foreach (var item in Companys)
+        {
+            if (routes == string.Empty)
+            {
+                routes = item;
+            }
+            routes.Concat(", "+item);
+        }
+        return routes;
+    }
+    private string GetId()
+    {
+        foreach (var item in cartItems)
+        {
+            CurrentPriceListId = item.PriceListId;
+        }
+        return CurrentPriceListId;
+    }
+    private async void Register()
+    {
+        valid = await PriceService.GetValidUntil();
+        if (LastName == null || FirstName == null)
+        {
+            errormessege = "Please fill both fields to register!";
+        }
+       // else if (valid <= DateTime.Now)
+       // {
+        //    errormessege = $"This price list is not valid anymore, it was valid until: {valid}.";
+       // }
+        else
+        {
+            regModel.TotalTravelTime = ToHumanReadableString(time);
+            regModel.Companys = CompaysToString();
+            regModel.Routes = RoutesToString();
+            regModel.FirstName = FirstName;
+            regModel.LastName = LastName;
+            regModel.PriceListId = GetId();
+            regModel.TotalPrice = cartItems.Sum(item => item.Price);
+
+            PriceService.PostRegData(regModel);
+
+            errormessege = "You Have been registered";
+        }
+
+    }
+    public static string ToHumanReadableString(TimeSpan t)
+    {
+        if (t.TotalSeconds <= 1)
+        {
+            return $@"{t:s\.ff} seconds";
+        }
+        if (t.TotalMinutes <= 1)
+        {
+            return $@"{t:%s} seconds";
+        }
+        if (t.TotalHours <= 1)
+        {
+            return $@"{t:%m} minutes";
+        }
+        if (t.TotalDays <= 1)
+        {
+            return $@"{t:%h} hours";
+        }
+        if (true)
+        {
+
+        }
+
+        return $@"{t:%d} days, {t:%h} Hours and {t:%m} Minutes";
+    }
+}

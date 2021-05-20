@@ -1,0 +1,54 @@
+﻿@page "/registeredpeople"
+@inject IPriceListServices PriceService
+
+<h3>RegisteredPeople</h3>
+
+
+@if (registeredpeople == null)
+{
+    <h2> Loading...</h2>
+}
+else
+{
+
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Routes </th>
+                <th>Companys</th>
+                <th>Total Price</th>
+                <th>Total Traveltime</th>                
+            </tr>
+        </thead>
+        <tbody>
+          @foreach (var item in registeredpeople)
+           {
+                <tr>
+                    <td>@item.FirstName</td>               
+                    <td>@item.LastName</td>
+                    <td>@item.Routes</td>
+                    <td>@item.Companys</td>
+                    <td>@item.TotalPrice€</td>
+                    <td>@item.TotalTravelTime</td>
+                 </tr>
+           }
+
+
+        </tbody>
+    </table>
+}
+
+
+
+@code {
+
+
+
+    private List<RegistrationModel> registeredpeople = new List<RegistrationModel>();
+    protected async override Task OnInitializedAsync()
+    {
+        registeredpeople = await PriceService.GetRegisteredPeople();
+    }
+}

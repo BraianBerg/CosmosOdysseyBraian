@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace CosmosOdyssey.Data.Migrations
 {
-    public partial class proov46 : Migration
+    public partial class _30first : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -68,6 +68,30 @@ namespace CosmosOdyssey.Data.Migrations
                         onDelete: ReferentialAction.Restrict);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "RegistrationModelDomain",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PriceListDomainId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Routes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    TotalPrice = table.Column<float>(type: "real", nullable: false),
+                    TotalTravelTime = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Companys = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RegistrationModelDomain", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RegistrationModelDomain_PriceListDomains_PriceListDomainId",
+                        column: x => x.PriceListDomainId,
+                        principalTable: "PriceListDomains",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_IdAi_PriceListDomainId",
                 table: "IdAi",
@@ -76,6 +100,11 @@ namespace CosmosOdyssey.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ProviderAllDomains_PriceListDomainId",
                 table: "ProviderAllDomains",
+                column: "PriceListDomainId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RegistrationModelDomain_PriceListDomainId",
+                table: "RegistrationModelDomain",
                 column: "PriceListDomainId");
         }
 
@@ -86,6 +115,9 @@ namespace CosmosOdyssey.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProviderAllDomains");
+
+            migrationBuilder.DropTable(
+                name: "RegistrationModelDomain");
 
             migrationBuilder.DropTable(
                 name: "PriceListDomains");

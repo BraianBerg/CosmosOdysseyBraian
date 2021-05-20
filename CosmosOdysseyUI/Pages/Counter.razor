@@ -1,15 +1,14 @@
 ﻿@page "/counter"
-@using CosmosOdyssey.ApplicationServices
-@using CosmosOdyssey.Core.Domain
-@using CosmosOdyssey.Core.ViewModel
-@inject IPriceListServices PriceService
 
+@inject IPriceListServices PriceService
+@inject ILocalStorageService LocalStorage
+@inject IToastService ToastService
 
 <h1>Counter</h1>
 <p>Current count: @currentCount</p>
-<button class="btn btn-primary" @onclick="@CountAndPost">UPDATE DB</button>
+<button class="btn btn-primary" @onclick="@PriceService.ChekAndDeleteOldPriceList">UPDATE DB</button>
 
-@if (displayModel == null)
+@if (displayModels == null)
 {
     <h2> Loading...</h2>
 }
@@ -23,9 +22,12 @@ else
     <input type="text" class="form-control mb-2 mr-sm-2"
            @bind="toSearchString"
            placeholder="Filter By Destination" />
+    <input type="text" class="form-control mb-2 mr-sm-2"
+           @bind="Company"
+           placeholder="Filter By Company" />
     <button type="button" class="btn btn-primary mb-2 mr-sm-2" @onclick="Filter">Fliter</button>
     <button type="button" class="btn btn-primary mb-2" @onclick="clear">Clear</button>
-
+    <h3 style="color:red">@errorString</h3>
 </div>
     <table class="table">
         <thead class="thead-dark">
@@ -40,22 +42,23 @@ else
             </tr>
         </thead>
         <tbody>
-            @for (int i = 0; i < displayModel.Length; i++)
+            @foreach (var item in displayModels)
             {
-            <tr>
-                <td>@displayModel[i].Form</td>
-                <td>---></td>
-                <td>@displayModel[i].To</td>
-                <td>@displayModel[i].FlightStart</td>
-                <td>@displayModel[i].FlightEnd</td>
-                <td>@displayModel[i].CompanyName</td>
-                <td>@displayModel[i].TravelTime</td>
-                <td>
-                    <button class="btn btn-primary">Register for flight</button>
-                </td>
+                <tr>
+                    <td>@item.Form</td>
+                    <td>---></td>
+                    <td>@item.To</td>
+                    <td>@item.FlightStart</td>
+                    <td>@item.FlightEnd</td>
+                    <td>@item.CompanyName</td>
+                    <td>@item.Price€</td>
 
-            </tr>
 
+                    <td>
+                        <button class="btn btn-primary" @onclick="(() => addToCart(item.ProviderId))">Register for flight</button>
+                    </td>
+
+                </tr>
             }
 
 
@@ -68,9 +71,14 @@ else
 
 
 @code {
-    DisplayModel[] displayModel;
+
+    List<DisplayModel> displayModels = new List<DisplayModel>();
+    //  DisplayModel selectedFlight = new DisplayModel();
     private string fromSearchString = string.Empty;
     private string toSearchString = string.Empty;
+    private string Company = null;
+    private string errorString = string.Empty;
+
     int currentCount = 0;
 
     public void CountAndPost()
@@ -82,7 +90,7 @@ else
     }
     private async Task Filter()
     {
-        displayModel = await PriceService.SearchForFlight(fromSearchString, toSearchString);
+        displayModels = await PriceService.SearchForFlight(fromSearchString, toSearchString, Company);
         StateHasChanged();
     }
     private async Task clear()
@@ -90,17 +98,43 @@ else
         fromSearchString = string.Empty;
         toSearchString = string.Empty;
         StateHasChanged();
-        displayModel = await PriceService.GetSpaceTravelDataDomain();
+        displayModels = await PriceService.GetSpaceTravelDataDomain();
     }
 
     protected override async Task OnInitializedAsync()
     {
-        displayModel = await PriceService.GetSpaceTravelDataDomain();
+        displayModels = await PriceService.GetSpaceTravelDataDomain();
+    }
+
+    protected async Task addToCart(string ProviderId)
+    {
+        DateTime valid = await PriceService.GetValidUntil();
+
+      //  if ( valid >= DateTime.Now)
+      //  {
+            var cart = await LocalStorage.GetItemAsync<List<DisplayModel>>("cart");
+            if (cart == null)
+            {
+                cart = new List<DisplayModel>();
+            }
+
+            var selectedFlight = (from x in displayModels
+                                  where x.ProviderId == ProviderId
+                                  select x).First();
+            cart.Add(selectedFlight);
+            await LocalStorage.SetItemAsync("cart", cart);
+            ToastService.ShowSuccess("Added To cart");
+      //  }
+     //   else
+    //    {
+        //    errorString = $"This price list is not valid anymore, it was valid until: {valid}. Please try again bit later!";
+    //    }
+
     }
 
 
 
+    }
 
-}
 
 

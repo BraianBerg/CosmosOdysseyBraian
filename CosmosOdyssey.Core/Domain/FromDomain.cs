@@ -10,6 +10,7 @@ namespace CosmosOdyssey.Core.Domain
         public PriceListDomain PriceListDomain { get; set; }
         [ForeignKey("PriceListDomain")]
         public string PriceListDomainId { get; set; }
+        
     }
 
 }

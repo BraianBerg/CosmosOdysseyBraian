@@ -14,6 +14,9 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using CosmosOdyssey.ApplicationServices;
 using CosmosOdyssey.Core.Domain;
+using Blazored.LocalStorage;
+using Blazored.Toast;
+using CosmosOdysseyUI.UIservices;
 
 namespace CosmosOdysseyUI
 {
@@ -30,11 +33,14 @@ namespace CosmosOdysseyUI
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddBlazoredToast();
+            services.AddBlazoredLocalStorage();
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
-           
+
+            services.AddScoped<ICartService, CartService>();
             services.AddScoped<IPriceListServices, PriceListServices>();
             services.AddScoped<PriceListDomain>();
             
